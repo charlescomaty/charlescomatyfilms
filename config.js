@@ -21,7 +21,7 @@ const SITE_CONFIG = {
     // Leave as "" if you don't have one yet — a placeholder will show instead.
     videoUrl: "https://youtu.be/xCRRMtpI0Q4",
     // Optional: a poster/thumbnail image URL shown before the video plays
-    posterUrl: "https://github.com/charlescomaty/charlescomatyfilms/blob/c4b89200efde66f2431bb5d6687d2e2f0fb2c85b/2.jpeg"
+    posterUrl: "2.jpeg"
   },
 
   // ---- All films (shown in the grid on the Films page) ---------------
@@ -39,7 +39,7 @@ const SITE_CONFIG = {
       year: "2026",
       description: "A french dystopian short-film about a teen working amid a war caused by students voting for the wrong class president. I directed this short to become class president.",
       videoUrl: "https://youtu.be/xCRRMtpI0Q4",
-      posterUrl: "https://github.com/charlescomaty/charlescomatyfilms/blob/c4b89200efde66f2431bb5d6687d2e2f0fb2c85b/2.jpeg"
+      posterUrl: "2.jpeg"
     },
     {
       title: "",
