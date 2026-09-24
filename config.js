@@ -35,10 +35,10 @@ const SITE_CONFIG = {
       posterUrl: ""
     },
     {
-      title: "",
-      year: "",
-      description: "",
-      videoUrl: "",
+      title: "Le vote décisif",
+      year: "2026",
+      description: "A french dystopian short-film about a teen working amid a war caused by students voting for the wrong class president. I directed this short to become class president.",
+      videoUrl: "https://youtu.be/xCRRMtpI0Q4",
       posterUrl: ""
     },
     {
