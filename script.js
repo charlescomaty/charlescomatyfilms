@@ -16,13 +16,31 @@ function playLoadbar() {
   setTimeout(() => loadbar.classList.remove('active'), 900);
 }
 
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+}
+
 function videoBlock(item, opts = {}) {
   if (item.videoUrl && item.videoUrl.trim() !== '') {
+    const ytEmbed = getYouTubeEmbedUrl(item.videoUrl);
+    
+    // If it's a YouTube link, use an iframe embed
+    if (ytEmbed) {
+      return `<div class="video-frame">
+        <iframe src="${ytEmbed}" style="width:100%;height:100%;border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>`;
+    }
+    
+    // Otherwise, treat as a direct video file URL (.mp4)
     const poster = item.posterUrl ? ` poster="${item.posterUrl}"` : '';
     return `<div class="video-frame">
       <video src="${item.videoUrl}"${poster} controls ${opts.autoplay ? 'muted autoplay loop playsinline' : ''}></video>
     </div>`;
   }
+  
   return `<div class="video-frame">
     <div class="video-placeholder">Video not linked yet.<br>Add a videoUrl in config.js for "${item.title}".</div>
   </div>`;
