@@ -21,7 +21,7 @@ const SITE_CONFIG = {
     // Leave as "" if you don't have one yet — a placeholder will show instead.
     videoUrl: "https://youtu.be/xCRRMtpI0Q4",
     // Optional: a poster/thumbnail image URL shown before the video plays
-    posterUrl: ""
+    posterUrl: "2.jpeg"
   },
 
   // ---- All films (shown in the grid on the Films page) ---------------
