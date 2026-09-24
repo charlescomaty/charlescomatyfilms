@@ -1,5 +1,5 @@
 /* =========================================================================
-   Site logic — reads all content from SITE_CONFIG (config.js).
+   Site logic â€” reads all content from SITE_CONFIG (config.js).
    You shouldn't need to edit this file to update your content.
    ========================================================================= */
 
@@ -7,6 +7,52 @@ const app = document.getElementById('app');
 const loadbar = document.getElementById('loadbar');
 const navBrand = document.getElementById('navBrand');
 const navLinks = document.querySelectorAll('.nav-link');
+
+// ---- Custom cursor ----
+const cursorDot = document.getElementById('cursorDot');
+const cursorRing = document.getElementById('cursorRing');
+if (cursorDot && cursorRing && matchMedia('(hover: hover)').matches) {
+  let ringX = 0, ringY = 0, mouseX = 0, mouseY = 0;
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX; mouseY = e.clientY;
+    cursorDot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%,-50%)`;
+  });
+  function animateRing() {
+    ringX += (mouseX - ringX) * 0.18;
+    ringY += (mouseY - ringY) * 0.18;
+    cursorRing.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%,-50%)`;
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  document.addEventListener('mouseover', (e) => {
+    if (e.target.closest('a, button, .film-card')) cursorRing.classList.add('hovering');
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest('a, button, .film-card')) cursorRing.classList.remove('hovering');
+  });
+}
+
+// wraps each character of a string in a span with a staggered animation delay
+function staggerLetters(text) {
+  return text.split('').map((ch, i) =>
+    `<span style="animation-delay:${i * 0.035}s">${ch === ' ' ? '&nbsp;' : ch}</span>`
+  ).join('');
+}
+
+// fades/slides in elements marked data-reveal as they enter the viewport
+function initScrollReveal() {
+  const els = document.querySelectorAll('[data-reveal]');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  els.forEach(el => io.observe(el));
+}
 
 function playLoadbar() {
   loadbar.classList.remove('active');
@@ -16,33 +62,47 @@ function playLoadbar() {
   setTimeout(() => loadbar.classList.remove('active'), 900);
 }
 
-function getYouTubeEmbedUrl(url) {
-  if (!url) return null;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+// Detects youtube.com/watch?v=..., youtu.be/..., and youtube.com/embed/...
+// links and returns just the video ID, or null if it's not a YouTube URL.
+function getYouTubeId(url) {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=)([\w-]+)/,
+    /(?:youtu\.be\/)([\w-]+)/,
+    /(?:youtube\.com\/embed\/)([\w-]+)/
+  ];
+  for (const p of patterns) {
+    const match = url.match(p);
+    if (match) return match[1];
+  }
+  return null;
 }
 
 function videoBlock(item, opts = {}) {
-  if (item.videoUrl && item.videoUrl.trim() !== '') {
-    const ytEmbed = getYouTubeEmbedUrl(item.videoUrl);
-    
-    // If it's a YouTube link, use an iframe embed
-    if (ytEmbed) {
-      return `<div class="video-frame">
-        <iframe src="${ytEmbed}" style="width:100%;height:100%;border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      </div>`;
-    }
-    
-    // Otherwise, treat as a direct video file URL (.mp4)
-    const poster = item.posterUrl ? ` poster="${item.posterUrl}"` : '';
+  const url = (item.videoUrl || '').trim();
+  if (url === '') {
     return `<div class="video-frame">
-      <video src="${item.videoUrl}"${poster} controls ${opts.autoplay ? 'muted autoplay loop playsinline' : ''}></video>
+      <div class="video-placeholder">Video not linked yet.<br>Add a videoUrl in config.js for "${item.title}".</div>
     </div>`;
   }
-  
+
+  const ytId = getYouTubeId(url);
+  if (ytId) {
+    // YouTube (including unlisted) must be embedded via iframe â€” YouTube
+    // doesn't provide a direct file URL a <video> tag can play.
+    return `<div class="video-frame">
+      <iframe
+        src="https://www.youtube.com/embed/${ytId}"
+        title="${item.title}"
+        style="width:100%;height:100%;border:0;"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+    </div>`;
+  }
+
+  // Direct video file link (Cloudflare Stream, Bunny.net, self-hosted, etc.)
+  const poster = item.posterUrl ? ` poster="${item.posterUrl}"` : '';
   return `<div class="video-frame">
-    <div class="video-placeholder">Video not linked yet.<br>Add a videoUrl in config.js for "${item.title}".</div>
+    <video src="${url}"${poster} controls ${opts.autoplay ? 'muted autoplay loop playsinline' : ''}></video>
   </div>`;
 }
 
@@ -50,11 +110,11 @@ function renderHome() {
   const f = SITE_CONFIG.featured;
   return `
     <section class="page">
-      <h1 class="home-name">${SITE_CONFIG.name}</h1>
-      <div class="home-role">${SITE_CONFIG.role}</div>
-      <p class="home-tagline">${SITE_CONFIG.tagline}</p>
+      <h1 class="home-name">${staggerLetters(SITE_CONFIG.name)}</h1>
+      <div class="home-role" data-reveal>${SITE_CONFIG.role}</div>
+      <p class="home-tagline" data-reveal>${SITE_CONFIG.tagline}</p>
 
-      <div class="featured">
+      <div class="featured" data-reveal>
         <div class="featured-eyebrow">Featured Film</div>
         <h2 class="featured-title">${f.title}</h2>
         <p class="featured-desc">${f.description}</p>
@@ -65,15 +125,22 @@ function renderHome() {
 }
 
 function renderFilms() {
-  const cards = SITE_CONFIG.films.map((film, i) => `
+  const cards = SITE_CONFIG.films.map((film, i) => {
+    let thumb = film.posterUrl;
+    if (!thumb) {
+      const ytId = getYouTubeId(film.videoUrl || '');
+      if (ytId) thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+    }
+    return `
     <div class="film-card" data-index="${i}">
-      <div class="film-card-media">${film.posterUrl ? `<img src="${film.posterUrl}" style="width:100%;height:100%;object-fit:cover;" alt="${film.title}">` : 'No poster set'}</div>
+      <div class="film-card-media">${thumb ? `<img src="${thumb}" style="width:100%;height:100%;object-fit:cover;" alt="${film.title}">` : 'No poster set'}</div>
       <div class="film-card-body">
         <div class="film-card-title">${film.title}</div>
         <div class="film-card-year">${film.year}</div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   return `
     <section class="page">
@@ -82,7 +149,7 @@ function renderFilms() {
     </section>
     <div class="modal-overlay" id="modalOverlay">
       <div class="modal-box">
-        <button class="modal-close" id="modalClose">Close ✕</button>
+        <button class="modal-close" id="modalClose">Close âœ•</button>
         <div id="modalVideoWrap"></div>
         <h3 class="modal-title" id="modalTitle"></h3>
         <p class="modal-desc" id="modalDesc"></p>
@@ -96,8 +163,8 @@ function renderAbout() {
   return `
     <section class="page">
       <h1 class="section-title">About</h1>
-      <p class="about-bio">${SITE_CONFIG.bio}</p>
-      <div class="skills">${tags}</div>
+      <p class="about-bio" data-reveal>${SITE_CONFIG.bio}</p>
+      <div class="skills" data-reveal>${tags}</div>
     </section>
   `;
 }
@@ -147,6 +214,13 @@ function route() {
   const page = PAGES[hash] ? hash : 'home';
 
   playLoadbar();
+
+  // brief film-wipe transition between pages
+  const wipe = document.createElement('div');
+  wipe.className = 'wipe play';
+  document.body.appendChild(wipe);
+  setTimeout(() => wipe.remove(), 550);
+
   app.innerHTML = PAGES[page]();
 
   navLinks.forEach(link => {
@@ -154,6 +228,7 @@ function route() {
   });
 
   if (page === 'films') attachFilmModalHandlers();
+  initScrollReveal();
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 }
 
