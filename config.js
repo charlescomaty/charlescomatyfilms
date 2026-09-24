@@ -15,11 +15,11 @@ const SITE_CONFIG = {
 
   // ---- Featured film (shown big on the Home page) -------------------
   featured: {
-    title: "The Epic Fury",
-    description: "The Epic Fury is a drama/thriller taking place during the war of 2026, about a Lebanese vlogger who must keep his sanity against solitude after being stuck in his house for days as the American Iranian war intensifies.",
+    title: "Le vote décisif",
+    description: "A french dystopian short-film about a teen working amid a war caused by students voting for the wrong class president. I directed this short to become class president and won.",
     // Paste the direct video URL from your host (Cloudflare Stream, Bunny.net, etc.)
     // Leave as "" if you don't have one yet — a placeholder will show instead.
-    videoUrl: "",
+    videoUrl: "https://youtu.be/xCRRMtpI0Q4",
     // Optional: a poster/thumbnail image URL shown before the video plays
     posterUrl: ""
   },
